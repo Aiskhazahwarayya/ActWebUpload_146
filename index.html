@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Unggah File - Dark Mode</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Unggah File Anda</h2>
+            <form action="upload.php" method="post" enctype="multipart/form-data" class="upload-form">
+                <div class="file-input-container">
+                    <label for="fileToUpload" class="file-label">
+                        <span class="file-icon">☁️</span>
+                        <span class="file-text">Seret file ke sini, atau klik untuk memilih (Maks. 1MB)</span>
+                        <input type="file" name="fileToUpload" id="fileToUpload" class="file-input" required>
+                    </label>
+                    
+                    <div id="filePreview" class="file-preview">
+                        <div id="previewContent"></div>
+                        <div id="fileSizeWarning" class="warning-message"></div>
+                    </div>
+                </div>
+                
+                <input type="submit" value="Unggah Sekarang" name="submit" class="submit-btn" id="submitBtn" disabled>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fileToUpload').addEventListener('change', function(e) {
+            const previewContent = document.getElementById('previewContent');
+            const sizeWarning = document.getElementById('fileSizeWarning');
+            const submitBtn = document.getElementById('submitBtn');
+            const fileLabelText = document.querySelector('.file-label .file-text');
+            const originalLabelText = 'Seret file ke sini, atau klik untuk memilih (Maks. 1MB)';
+
+            previewContent.innerHTML = '';
+            sizeWarning.innerHTML = '';
+            
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const fileSizeMB = (file.size / (1024*1024)).toFixed(2);
+                
+                // Validasi ukuran file (1MB)
+                if (file.size > 1024 * 1024) { // 1MB in bytes
+                    sizeWarning.innerHTML = `❌ File terlalu besar (${fileSizeMB} MB). Maksimal 1MB!`;
+                    submitBtn.disabled = true;
+                    fileLabelText.textContent = originalLabelText;
+                    return;
+                } else {
+                    submitBtn.disabled = false;
+                }
+                
+                fileLabelText.textContent = file.name; // Tampilkan nama file di label
+
+                let previewHTML = '';
+                const fileType = file.name.split('.').pop().toLowerCase();
+                const fileURL = URL.createObjectURL(file);
+
+                // Preview untuk gambar
+                if (['jpg', 'jpeg', 'png', 'gif'].includes(fileType)) {
+                    previewHTML = `<img src="${fileURL}" alt="Preview Gambar" class="preview-image">`;
+                }
+                // Preview untuk PDF menggunakan <embed>
+                else if (fileType === 'pdf') {
+                    previewHTML = `<embed src="${fileURL}" type="application/pdf" class="preview-pdf">`;
+                }
+                // Preview untuk file lain (ikon)
+                else {
+                    let icon = '📄';
+                    if (['doc', 'docx'].includes(fileType)) icon = '📝';
+                    if (['zip', 'rar'].includes(fileType)) icon = '🗄️';
+                    
+                    previewHTML = `<div class="preview-generic" style="text-align:center; font-size: 5rem; padding: 20px 0;">${icon}</div>`;
+                }
+                
+                // Tambahkan info file di bawah preview
+                previewHTML += `
+                    <div class="file-meta">
+                        <span class="file-name">Nama File: ${file.name}</span>
+                        <span class="file-size">Ukuran: ${fileSizeMB} MB</span>
+                        <span class="file-type">Tipe: ${fileType.toUpperCase()}</span>
+                    </div>
+                `;
+
+                previewContent.innerHTML = previewHTML;
+            } else {
+                submitBtn.disabled = true;
+                fileLabelText.textContent = originalLabelText;
+            }
+        });
+    </script>
+</body>
+</html>
